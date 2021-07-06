@@ -31,4 +31,4 @@ async def foo(ctx, url):
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
 
-bot.run('ODI3NzE4MjczMzU2NjYwNzg2.YGfGtg.8pgzbul0s_tuvdOYj_ckr3-kE8M')
+bot.run('token_here')
