@@ -1,18 +1,11 @@
-
 from utils import *
-# from __future__ import unicode_literals
-# from flask import Flask
-# from flask import request
-# from flask.helpers import send_from_directory
-# app = Flask(__name__)
-import discord
 from discord.ext import commands
 
 ###########################################
 # Config
 ###########################################
 
-CONFIG_FILE_PATH = "config.json"
+CONFIG_FILE_PATH = "../config.json"
 CONFIG = get_config(CONFIG_FILE_PATH)
 assert(CONFIG)
 
@@ -30,9 +23,9 @@ bot = commands.Bot(command_prefix="$")
 
 @bot.command(name="download")
 async def foo(ctx, url):
-    d = Downloader(ctx, CONFIG["filepath"])
+    d = Downloader(ctx, "../"+CONFIG["filepath"])
     title = d.download(url)
-    await ctx.send("Downloaded {0}".format(title))
+    await ctx.send("http://51.89.230.225/play/{0}".format(title))
 
 @bot.event
 async def on_ready():

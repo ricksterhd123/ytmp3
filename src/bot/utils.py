@@ -26,7 +26,7 @@ class Downloader:
         self.file_path = file_path
         self.__ydl_opts = {
             'format': 'bestaudio/best',
-            'outtmpl': '{0}/%(title)s.%(ext)s'.format(file_path),
+            'outtmpl': '{0}/%(display_id)s.%(ext)s'.format(file_path),
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
@@ -44,7 +44,7 @@ class Downloader:
         """
         with youtube_dl.YoutubeDL(self.__ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=False)
-            video_title = info_dict.get('title', None)
+            video_title = info_dict.get('display_id', None)
             p = Path("{0}/{1}.mp3".format(self.file_path, video_title))
             if not p.exists():
                 ydl.download([url])
@@ -53,8 +53,9 @@ class Downloader:
             return video_title
 
     def debug(self, msg):
-        print(msg)
-        loop.create_task(sendMessage(self.ctx, msg))
+        pass
+        # print(msg)
+        # loop.create_task(sendMessage(self.ctx, msg))
 
     def warning(self, msg):
         print(msg)
@@ -66,7 +67,7 @@ class Downloader:
 
     def my_hook(self, d):
         if d['status'] == 'finished':
-            loop.create_task(sendMessage(self.ctx, 'Done downloading, now converting ...'))
+            print('Done downloading, now converting ...')
 
 def get_config(file_name):
     """
