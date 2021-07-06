@@ -17,7 +17,7 @@ def get_config(file_name):
             return json.loads(f.read())
     return False
 
-
+print(__file__)
 CONFIG_FILE_PATH = "../config.json"
 CONFIG = get_config(CONFIG_FILE_PATH)
 assert(CONFIG)
