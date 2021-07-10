@@ -12,7 +12,7 @@ pip install virtualenv [--user]
 
 # create an env
 virtualenv venv
-virtualenv -p /usr/local/bin/pypy myenv # using the pypy distribution
+virtualenv -p /usr/local/bin/pypy venv # using the pypy distribution
 
 # use the env
 source myenv/bin/activate
