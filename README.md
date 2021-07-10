@@ -2,9 +2,8 @@
 
 Simple youtube downloader discord bot and web API
 
-## Endpoints
-- /download/(?v=) => Downloads video and returns JSON containing static file URL lasting up to 20 minutes before it deletes automatically
-- /play/ => TBD
+## HTTP Endpoints
+- /play/(?v=) => Plays downloaded .mp3 file converted from YouTube
 
 ## Setup
 ```bash
@@ -12,7 +11,7 @@ Simple youtube downloader discord bot and web API
 pip install virtualenv [--user]
 
 # create an env
-virtualenv myenv
+virtualenv venv
 virtualenv -p /usr/local/bin/pypy myenv # using the pypy distribution
 
 # use the env
@@ -24,6 +23,13 @@ pip install -r requirements.txt
 cd src/
 
 # run flask
+cd web/
 export FLASK_APP=main.py
+# development:
 flask run
+# production: read gunicorn docs
+
+# run bot
+cd bot
+python main.py
 ```
