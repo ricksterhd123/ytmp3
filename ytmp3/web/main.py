@@ -1,10 +1,18 @@
 from __future__ import unicode_literals
 
+<<<<<<< HEAD
 # # sys.path hack so that ..package can be imported properly
 # # When i find it necessary, I will do this
 # # https://stackoverflow.com/questions/6323860/sibling-package-imports/50193944#50193944
 # import sys
 # sys.path.append("..") # Adds higher directory to python modules path.
+=======
+# sys.path hack so that ..package can be imported properly
+# When i find it necessary, I will do this
+# https://stackoverflow.com/questions/6323860/sibling-package-imports/50193944#50193944
+import sys
+sys.path.append("..") # Adds higher directory to python modules path.
+>>>>>>> f834499404c37b31e32e39a53ac978291d3c5530
 
 from flask import Flask
 from flask import request
