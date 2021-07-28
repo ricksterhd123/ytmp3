@@ -9,6 +9,7 @@ from model.priorityQueue import *
 # logger.setLevel(logging.INFO)
 # logger.addHandler(logging.StreamHandler())
 
+
 async def ws_command_dispatcher(websocket, path):
     """
     Get message from websocket client and dispatch it to
