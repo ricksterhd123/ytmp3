@@ -1,0 +1,22 @@
+version: "3"
+services:
+    downloader:
+        # restart: always
+        build: downloader/
+        volumes:
+            - static:/usr/src/app/static
+    web:
+        restart: always
+        build: web/
+        ports:
+            - "5000:5000"
+        volumes:
+            - static:/usr/src/app/static
+    bot:
+        restart: always
+        build: bot/
+        volumes:
+            - static:/usr/src/app/static
+volumes:
+    static:
+        external: true
