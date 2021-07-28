@@ -2,28 +2,24 @@
 
 Simple youtube downloader discord bot and web API
 
+ address in ytmp3/bot/config.json and ytmp3/web/config.json
+
 ## Endpoints
-- /download/(?v=) => Downloads video and returns JSON containing static file URL lasting up to 20 minutes before it deletes automatically
-- /play/ => TBD
+- /play/id => serves id.mp3 downloaded and converted from /watch?v=id (must be requested from the discord bot)
+
+## Requirements
+- docker
+- docker-compose
 
 ## Setup
+
+1. Clone the repository
+2. cd into the directory
+3. run the following commands
 ```bash
-# install
-pip install virtualenv [--user]
-
-# create an env
-virtualenv myenv
-virtualenv -p /usr/local/bin/pypy myenv # using the pypy distribution
-
-# use the env
-source myenv/bin/activate
-
-# install dependencies
-pip install -r requirements.txt
-
-cd src/
-
-# run flask
-export FLASK_APP=main.py
-flask run
+cd ./ytmp3 # relative to this file!
+docker-compose up
 ```
+4. Provide bot token in ytmp3/bot/config.json
+5. Change IP in ytmp3/bot/config.json and ytmp3/web/config.json
+6. You can switch the IP into a domain name, it's only needed to provide a valid URL to the users after converting is complete.
