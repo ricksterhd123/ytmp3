@@ -18,7 +18,7 @@ assert(CONFIG)
 
 app = Flask(__name__)
 
-@app.route('/play/<name>')
+@app.route('/<name>')
 def play(name):
     print(name)
     return send_from_directory("../"+CONFIG["filepath"], "{0}.mp3".format(name))

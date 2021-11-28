@@ -38,7 +38,7 @@ class Downloader(commands.Cog):
             p = Path("{0}/{1}.mp3".format(self.__file_path, video_title))
             if not p.exists():
                 ydl.download([url])
-            await ctx.send("http://{0}/play/{1}".format(self.__hostname, video_title))
+            await ctx.send("{0}/{1}".format(self.__hostname, video_title))
 
     async def cog_command_error(self, ctx, error):
         await super().cog_command_error(ctx, error)
