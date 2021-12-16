@@ -4,7 +4,10 @@
 import sys
 sys.path.append("..") # Adds higher directory to python modules path.
 
-from utils import *
+import logging
+logging.basicConfig(filename="../../log/bot.log", level=logging.INFO)
+
+from downloader import *
 from discord.ext import commands
 from config.read import get_config
 
@@ -26,11 +29,12 @@ bot = commands.Bot(command_prefix="$")
 # Routing
 ###########################################
 
-# ^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$
-
 @bot.event
 async def on_ready():
-    print('We have logged in as {0.user}'.format(bot))
+    print("We have logged in as {0}".format(bot))
+    logging.info('We have logged in as {0}'.format(bot))
 
-bot.add_cog(Downloader(bot, "../" + CONFIG["filepath"], CONFIG["hostname"]))
+print("Adding bot")
+bot.add_cog(Downloader(bot, logging, CONFIG))
+print("Running bot")
 bot.run(CONFIG["bot_token"])

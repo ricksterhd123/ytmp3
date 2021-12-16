@@ -25,6 +25,7 @@ def play(name):
 
 @app.route("/")
 def index():
+    print("test")
     return INDEX
 
 INDEX = """
