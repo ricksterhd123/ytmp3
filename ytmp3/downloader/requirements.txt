@@ -1,0 +1,2 @@
+youtube-dl==2021.6.6
+websockets==9.1.0
