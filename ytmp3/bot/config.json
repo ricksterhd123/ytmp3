@@ -2,6 +2,5 @@
     "filepath": "../../static",
     "bot_token": "",
     "hostname": "https://skywarriors.net/play",
-    "max_duration": 20,
-    "guilds": []
+    "max_duration": 20
 }
