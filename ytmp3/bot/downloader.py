@@ -8,12 +8,16 @@ class Downloader(commands.Cog):
     """
     def __init__(self, bot, logging, options):
         self.bot = bot
+        
+        # logs for youtube-dl
         self.__logging = logging
+        # Hostname of webserver
         self.__hostname = options['hostname']
+        # Path to save .mp3 files
         self.__file_path = options['filepath']
+        # Maximum duration of video in minutes
         self.__max_duration = options['max_duration']
-        self.__guilds = options["guilds"]
-
+        # Youtube-dl options
         self.__ydl_opts = {
             'format': 'bestaudio/best',
             'outtmpl': '{0}/%(display_id)s.%(ext)s'.format(self.__file_path),
@@ -25,13 +29,25 @@ class Downloader(commands.Cog):
             'logger': logging,
             'progress_hooks': [self.my_hook],
         }
-        self.queue = []
+        # Command help
+        self.__help = {
+            'download': '$download https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            'default': 'Commands:\n1. $download [URL] - Convert video from URL into .mp3'
+        }
+        # Download queue
+        self.__queue = []
+        # Are we currently downloading something?
         self.__downloading = False
+        # Tell our logger we've instantiated this object
         self.__logging.info("Initialized YTMP3 downloader")
+        # Start download task
         self.download_video.start()
 
     def __isDuplicate(self, video_id):
-        for q in self.queue:
+        """
+        Check if video is on the queue already...
+        """
+        for q in self.__queue:
             if q['video_id'] == video_id:
                 return True
         return False
@@ -39,9 +55,8 @@ class Downloader(commands.Cog):
     @commands.command()
     async def download(self, ctx, url):
         """
-        Downloads video 
-        :param str name: v arg url
-        :returns: title of video
+        Downloads video from provided URL,
+        reply directly to discord user with URL of converted .mp3 file
         """
 
         self.__log("User ID {0} attempted to download {1} inside guild ID {2}".format(ctx.author.id, url, ctx.guild.id))
@@ -49,13 +64,6 @@ class Downloader(commands.Cog):
         # Don't serve via direct message
         if not ctx.guild:
             self.__log("No guild found, ignoring")
-            return
-
-        # Don't serve to unknown guilds
-        try:
-            self.__guilds.index(ctx.guild.id)
-        except ValueError as ve:
-            self.__log("Guild not valid, ignoring")
             return
 
         with YoutubeDL(self.__ydl_opts) as ydl:
@@ -74,17 +82,34 @@ class Downloader(commands.Cog):
             if p.exists():
                 await ctx.reply("YO {0} =D\n{1}/{2}.mp3".format(ctx.author.display_name, self.__hostname, video_id))
             else:
+                # TODO: Add user to CC list (CC via ping) so that they also get notified
                 if not self.__isDuplicate(video_id):
-                    self.queue.append({'ctx': ctx, 'url': url, 'video_id': video_id})
+                    self.__queue.append({'ctx': ctx, 'url': url, 'video_id': video_id})
+
+    @commands.command()
+    async def help(self, ctx, name):
+        """
+        Custom help command
+        """
+        self.__log("User ID {0} wants help with command {1} instead guild ID {2}".format(ctx.author.id, name, ctx.guild.id))
+
+        if not (name and self.__name[name]):
+            name = "default"
+
+        await ctx.reply(self.__help[name])
 
     @tasks.loop(seconds=5.0)
     async def download_video(self):
-        if len(self.queue) == 0 or self.__downloading:
+        """
+        This Task will execute every 5 seconds checking if there is anything on the queue that needs
+        downloading with youtube-dl. We don't do concurrency here so only download 1 at a time.
+        """
+        if len(self.__queue) == 0 or self.__downloading:
             return
 
-        ctx = self.queue[0]['ctx']
-        url = self.queue[0]['url']
-        video_id = self.queue[0]['video_id']
+        ctx = self.__queue[0]['ctx']
+        url = self.__queue[0]['url']
+        video_id = self.__queue[0]['video_id']
 
         self.__downloading = True
 
@@ -98,7 +123,7 @@ class Downloader(commands.Cog):
             self.__log(error)
             await ctx.reply("NO D=")
         
-        self.queue.pop(0)
+        self.__queue.pop(0)
         self.__downloading = False
 
     def __log(self, text, level="info"):
