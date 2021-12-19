@@ -8,7 +8,6 @@ class Downloader(commands.Cog):
     """
     def __init__(self, bot, logging, options):
         self.bot = bot
-        
         # logs for youtube-dl
         self.__logging = logging
         # Hostname of webserver

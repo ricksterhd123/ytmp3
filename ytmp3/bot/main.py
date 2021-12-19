@@ -4,8 +4,9 @@
 import sys
 sys.path.append("..") # Adds higher directory to python modules path.
 
-import logging
-logging.basicConfig(filename="../../log/bot.log", level=logging.INFO)
+# Setup logging
+import logger
+logging = logger.get_logger("../../log/bot.log")
 
 from downloader import *
 from discord.ext import commands
@@ -34,7 +35,7 @@ async def on_ready():
     print("We have logged in as {0}".format(bot))
     logging.info('We have logged in as {0}'.format(bot))
 
-print("Adding bot")
+logging.info("Adding cog")
 bot.add_cog(Downloader(bot, logging, CONFIG))
-print("Running bot")
+logging.info("Running bot")
 bot.run(CONFIG["bot_token"])
