@@ -52,13 +52,11 @@ class Downloader(commands.Cog):
         Downloads video from provided URL,
         reply directly to discord user with URL of converted .mp3 file
         """
-
-        self.__log("User ID {0} attempted to download {1} inside guild ID {2}".format(ctx.author.id, url, ctx.guild.id))
-
         # Don't serve via direct message
         if not ctx.guild:
-            self.__log("No guild found, ignoring")
             return
+
+        self.__log("User ID {0} attempted to download {1} inside guild ID {2}".format(ctx.author.id, url, ctx.guild.id))
 
         with YoutubeDL(self.__ydl_opts) as ydl:
             info_dict = ydl.sanitize_info(ydl.extract_info(url, download=False))
@@ -85,8 +83,11 @@ class Downloader(commands.Cog):
         """
         Custom help command
         """
-        self.__log("User ID {0} wants help inside guild ID {1}".format(ctx.author.id, ctx.guild.id))
+        # Don't serve via direct message
+        if not ctx.guild:
+            return
 
+        self.__log("User ID {0} wants help inside guild ID {1}".format(ctx.author.id, ctx.guild.id))
         await ctx.reply("Type:\n$download https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
     @tasks.loop(seconds=5.0)
