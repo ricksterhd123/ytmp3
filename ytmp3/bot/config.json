@@ -1,6 +1,6 @@
 {
     "filepath": "../../static",
     "bot_token": "",
-    "hostname": "https://skywarriors.net/play",
-    "max_duration": 20
+    "hostname": "",
+    "max_duration": 30
 }
