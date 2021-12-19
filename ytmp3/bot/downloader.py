@@ -29,11 +29,6 @@ class Downloader(commands.Cog):
             'logger': logging,
             'progress_hooks': [self.my_hook],
         }
-        # Command help
-        self.__help = {
-            'download': '$download https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-            'default': 'Commands:\n1. $download [URL] - Convert video from URL into .mp3'
-        }
         # Download queue
         self.__queue = []
         # Are we currently downloading something?
@@ -80,23 +75,20 @@ class Downloader(commands.Cog):
             p = Path("{0}/{1}.mp3".format(self.__file_path, video_id))
 
             if p.exists():
-                await ctx.reply("YO {0} =D\n{1}/{2}.mp3".format(ctx.author.display_name, self.__hostname, video_id))
+                await ctx.reply("YES =D\n{0}/{1}.mp3".format(self.__hostname, video_id))
             else:
                 # TODO: Add user to CC list (CC via ping) so that they also get notified
                 if not self.__isDuplicate(video_id):
                     self.__queue.append({'ctx': ctx, 'url': url, 'video_id': video_id})
 
     @commands.command()
-    async def help(self, ctx, name):
+    async def help(self, ctx):
         """
         Custom help command
         """
-        self.__log("User ID {0} wants help with command {1} instead guild ID {2}".format(ctx.author.id, name, ctx.guild.id))
+        self.__log("User ID {0} wants help inside guild ID {1}".format(ctx.author.id, ctx.guild.id))
 
-        if not (name and self.__name[name]):
-            name = "default"
-
-        await ctx.reply(self.__help[name])
+        await ctx.reply("Type:\n$download https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
     @tasks.loop(seconds=5.0)
     async def download_video(self):
@@ -114,15 +106,11 @@ class Downloader(commands.Cog):
         self.__downloading = True
 
         # Setup YoutubeDL
-        try:
-            with YoutubeDL(self.__ydl_opts) as ydl:
-                self.__log("Downloading {0}".format(url))
-                ydl.download([url])
-                await ctx.reply("YO {0} =D\n{1}/{2}.mp3".format(ctx.author.display_name, self.__hostname, video_id))
-        except Exception as error:
-            self.__log(error)
-            await ctx.reply("NO D=")
-        
+        with YoutubeDL(self.__ydl_opts) as ydl:
+            self.__log("Downloading {0}".format(url))
+            ydl.download([url])
+            await ctx.reply("YO {0} =D\n{1}/{2}.mp3".format(ctx.author.display_name, self.__hostname, video_id))
+
         self.__queue.pop(0)
         self.__downloading = False
 
@@ -132,7 +120,7 @@ class Downloader(commands.Cog):
 
     async def cog_command_error(self, ctx, error):
         await super().cog_command_error(ctx, error)
-        await ctx.reply("NO D=")
+        await ctx.reply(error)
         self.__log(error)
 
     def my_hook(self, d):
