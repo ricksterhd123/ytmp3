@@ -62,18 +62,17 @@ class Downloader(commands.Cog):
             info_dict = ydl.sanitize_info(ydl.extract_info(url, download=False))
             video_id = info_dict.get('display_id', None)
             duration = info_dict.get('duration', None)
-            is_live = info_dict.get('is_live', False)
 
             self.__log("Video ID: {0}, Duration: {1}".format(video_id, duration))
 
+            if not duration:
+                self.__log("Video ID: {0} has no duration metadata")
+                return await ctx.reply("Cannot find duration in metadata. Aborting.")
+
             # Check if video's duration has exceeded the max duration
-            if duration and duration > self.__max_duration * 60:
+            if duration > self.__max_duration * 60:
                 self.__log("Video ID: {0} exceeds max duration")
                 return await ctx.reply("Sorry, that video's duration has exceeded {0} minutes. Please try a shorter video.".format(self.__max_duration))
-
-            if is_live:
-                self.__log("Video ID: {0} is live")
-                return await ctx.reply("Cannot convert live videos. Try again when it has finished.")
 
             p = Path("{0}/{1}.mp3".format(self.__file_path, video_id))
 
