@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 from yt_dlp import YoutubeDL
 from discord.ext import tasks, commands
@@ -58,6 +59,13 @@ class Downloader(commands.Cog):
 
         self.__log("User ID {0} attempted to download {1} inside guild ID {2}".format(ctx.author.id, url, ctx.guild.id))
 
+        # Check URL for nasties like &list=
+        containsList = not not re.search('list=', url)
+
+        if containsList:
+            self.__log("Detected list in URL. Aborting.")
+            return await ctx.reply("Cannot accept URL containing 'list='")
+
         with YoutubeDL(self.__ydl_opts) as ydl:
             info_dict = ydl.sanitize_info(ydl.extract_info(url, download=False))
             video_id = info_dict.get('display_id', None)
@@ -110,11 +118,17 @@ class Downloader(commands.Cog):
 
         self.__downloading = True
 
-        # Setup YoutubeDL
-        with YoutubeDL(self.__ydl_opts) as ydl:
-            self.__log("Downloading {0}".format(url))
-            ydl.download([url])
-            await ctx.reply("YO {0} =D\n{1}/{2}.mp3".format(ctx.author.display_name, self.__hostname, video_id))
+        # Attempt to download video but if something does go wrong, catch it here so we don't
+        # lose track of the downloading status and the queue
+        try:
+            with YoutubeDL(self.__ydl_opts) as ydl:
+                self.__log("Downloading {0}".format(url))
+                ydl.download([url])
+                await ctx.reply("YO {0} =D\n{1}/{2}.mp3".format(ctx.author.display_name, self.__hostname, video_id))
+        except Exception as error:
+            self.__log("Failed to download video {0} requested from {1}".format(url, ctx.author.display_name))
+            self.__log(error)
+            await ctx.reply(error)
 
         self.__queue.pop(0)
         self.__downloading = False
@@ -124,6 +138,10 @@ class Downloader(commands.Cog):
             self.__logging.info(text)
 
     async def cog_command_error(self, ctx, error):
+        """
+        This should be called only on exceptional circumstances if it's even possible...
+        It's here for sanity because I'm not quite sure how the internals work on discord.py
+        """
         await super().cog_command_error(ctx, error)
         await ctx.reply(error)
         self.__log(error)
