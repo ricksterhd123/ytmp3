@@ -31,8 +31,6 @@ class Downloader(commands.Cog):
         }
         # Download queue
         self.__queue = []
-        # Are we currently downloading something?
-        self.__downloading = False
         # Tell our logger we've instantiated this object
         self.__logging.info("Initialized YTMP3 downloader")
         # Start download task
@@ -103,20 +101,18 @@ class Downloader(commands.Cog):
         self.__log("User ID {0} wants help inside guild ID {1}".format(ctx.author.id, ctx.guild.id))
         await ctx.reply("Type:\n$download https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
-    @tasks.loop(seconds=5.0)
+    @tasks.loop()
     async def download_video(self):
         """
         This Task will execute every 5 seconds checking if there is anything on the queue that needs
         downloading with youtube-dl. We don't do concurrency here so only download 1 at a time.
         """
-        if len(self.__queue) == 0 or self.__downloading:
+        if len(self.__queue) == 0:
             return
 
         ctx = self.__queue[0]['ctx']
         url = self.__queue[0]['url']
         video_id = self.__queue[0]['video_id']
-
-        self.__downloading = True
 
         # Attempt to download video but if something does go wrong, catch it here so we don't
         # lose track of the downloading status and the queue
@@ -131,7 +127,6 @@ class Downloader(commands.Cog):
             await ctx.reply(error)
 
         self.__queue.pop(0)
-        self.__downloading = False
 
     def __log(self, text, level="info"):
         if level == "info":
