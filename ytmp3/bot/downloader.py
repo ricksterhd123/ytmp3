@@ -110,9 +110,10 @@ class Downloader(commands.Cog):
         if len(self.__queue) == 0:
             return
 
-        ctx = self.__queue[0]['ctx']
-        url = self.__queue[0]['url']
-        video_id = self.__queue[0]['video_id']
+        request = self.__queue.pop(0)
+        ctx = request['ctx']
+        url = request['url']
+        video_id = request['video_id']
 
         # Attempt to download video but if something does go wrong, catch it here so we don't
         # lose track of the downloading status and the queue
@@ -125,8 +126,6 @@ class Downloader(commands.Cog):
             self.__log("Failed to download video {0} requested from {1}".format(url, ctx.author.display_name))
             self.__log(error)
             await ctx.reply(error)
-
-        self.__queue.pop(0)
 
     def __log(self, text, level="info"):
         if level == "info":
