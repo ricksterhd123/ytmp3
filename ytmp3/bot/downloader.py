@@ -1,6 +1,9 @@
 import re
+import asyncio
+
 from pathlib import Path
 from yt_dlp import YoutubeDL
+from multiprocessing import Process
 from discord.ext import tasks, commands
 
 class Downloader(commands.Cog):
@@ -29,21 +32,14 @@ class Downloader(commands.Cog):
             'logger': logging,
             'progress_hooks': [self.my_hook],
         }
-        # Download queue
-        self.__queue = []
         # Tell our logger we've instantiated this object
         self.__logging.info("Initialized YTMP3 downloader")
-        # Start download task
-        self.download_video.start()
 
-    def __isDuplicate(self, video_id):
-        """
-        Check if video is on the queue already...
-        """
-        for q in self.__queue:
-            if q['video_id'] == video_id:
-                return True
-        return False
+    @commands.command()
+    async def ping(self, ctx):
+        if not ctx.guild:
+            return
+        await ctx.reply("Pong")
 
     @commands.command()
     async def download(self, ctx, url):
@@ -85,9 +81,13 @@ class Downloader(commands.Cog):
             if p.exists():
                 await ctx.reply("YES =D\n{0}/{1}.mp3".format(self.__hostname, video_id))
             else:
-                # TODO: Add user to CC list (CC via ping) so that they also get notified
-                if not self.__isDuplicate(video_id):
-                    self.__queue.append({'ctx': ctx, 'url': url, 'video_id': video_id})
+                try:
+                    self.__download_video(url)
+                    await ctx.reply("YO {0} =D\n{1}/{2}.mp3".format(ctx.author.display_name, self.__hostname, video_id))
+                except Exception as error:
+                    self.__log("Failed to download video {0} requested from {1}".format(url, ctx.author.display_name))
+                    self.__log(error)
+                    await ctx.reply(error)
 
     @commands.command()
     async def help(self, ctx):
@@ -98,34 +98,15 @@ class Downloader(commands.Cog):
         if not ctx.guild:
             return
 
+        url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         self.__log("User ID {0} wants help inside guild ID {1}".format(ctx.author.id, ctx.guild.id))
-        await ctx.reply("Type:\n$download https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+        await ctx.reply("Type:\n$download {0}".format(url))
+        await self.download(ctx, url)
 
-    @tasks.loop()
-    async def download_video(self):
-        """
-        This Task will execute every 5 seconds checking if there is anything on the queue that needs
-        downloading with youtube-dl. We don't do concurrency here so only download 1 at a time.
-        """
-        if len(self.__queue) == 0:
-            return
-
-        request = self.__queue.pop(0)
-        ctx = request['ctx']
-        url = request['url']
-        video_id = request['video_id']
-
-        # Attempt to download video but if something does go wrong, catch it here so we don't
-        # lose track of the downloading status and the queue
-        try:
-            with YoutubeDL(self.__ydl_opts) as ydl:
-                self.__log("Downloading {0}".format(url))
-                ydl.download([url])
-                await ctx.reply("YO {0} =D\n{1}/{2}.mp3".format(ctx.author.display_name, self.__hostname, video_id))
-        except Exception as error:
-            self.__log("Failed to download video {0} requested from {1}".format(url, ctx.author.display_name))
-            self.__log(error)
-            await ctx.reply(error)
+    def __download_video(self, url):
+        with YoutubeDL(self.__ydl_opts) as ydl:
+            self.__log("Downloading {0}".format(url))
+            ydl.download([url])
 
     def __log(self, text, level="info"):
         if level == "info":
