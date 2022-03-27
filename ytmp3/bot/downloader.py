@@ -1,10 +1,7 @@
 import re
-import asyncio
-
 from pathlib import Path
 from yt_dlp import YoutubeDL
-from multiprocessing import Process
-from discord.ext import tasks, commands
+from discord.ext import commands
 
 class Downloader(commands.Cog):
     """
