@@ -4,9 +4,6 @@ from yt_dlp import YoutubeDL
 from discord.ext import commands
 
 class Downloader(commands.Cog):
-    """
-    Cog for extracting audio from URL with youtube-dl
-    """
     def __init__(self, bot, logging, options):
         self.bot = bot
         # logs for youtube-dl
@@ -36,17 +33,12 @@ class Downloader(commands.Cog):
     async def ping(self, ctx):
         if not ctx.guild:
             return
-
         self.__log(f"User {ctx.author.id} pinged inside guild {ctx.guild.id}")
 
         await ctx.reply("Pong")
 
     @commands.command()
     async def download(self, ctx, url):
-        """
-        Downloads video from provided URL,
-        reply directly to discord user with URL of converted .mp3 file
-        """
         # Don't serve via direct message
         if not ctx.guild:
             return
@@ -54,11 +46,21 @@ class Downloader(commands.Cog):
         self.__log(f"User {ctx.author.id} attempted to download {url} inside guild ID {ctx.guild.id}")
 
         # Check URL for nasties like &list=
-        containsList = not not re.search("list=", url)
+        containsList = bool('list=' in url)
 
         if containsList:
             self.__warning("Detected 'list=' substring inside the URL.")
-            return await ctx.reply("Cannot accept URL containing 'list='")
+            listurl = url.split('list=')[0]
+            if p.exists():
+                await ctx.reply(f"YES =D\n{self.__hostname}/{video_id}.mp3")
+            else:
+                try:
+                    self.__download_video(listurl)
+                    await ctx.reply(f"YO {ctx.author.display_name} =D\n{self.__hostname}/{video_id}.mp3")
+                except Exception as error:
+                    self.__error(f"Failed to download video {url} requested from {ctx.author.display_name}\n{error}")
+                    await ctx.reply(error)
+
 
         with YoutubeDL(self.__ydl_opts) as ydl:
             info_dict = ydl.sanitize_info(ydl.extract_info(url, download=False))
@@ -82,22 +84,21 @@ class Downloader(commands.Cog):
 
             p = Path(f"{self.__file_path}/{video_id}.mp3")
 
+            # Sorry I didn't get this part. I think its: if the video was already downloaded?
             if p.exists():
                 await ctx.reply(f"YES =D\n{self.__hostname}/{video_id}.mp3")
+            # If not:
             else:
                 try:
                     self.__download_video(url)
                     await ctx.reply(f"YO {ctx.author.display_name} =D\n{self.__hostname}/{video_id}.mp3")
                 except Exception as error:
-                    self.__error(f"Failed to download video {url} requested from {ctx.author.display_name}")
-                    self.__error(error)
+                    self.__error(f"Failed to download video {url} requested from {ctx.author.display_name}\nError")
                     await ctx.reply(error)
 
     @commands.command()
     async def help(self, ctx):
-        """
-        Custom help command
-        """
+        # Help Command
         # Don't serve via direct message
         if not ctx.guild:
             return
@@ -112,11 +113,6 @@ class Downloader(commands.Cog):
         await self.download(ctx, url)
 
     def __get_max_duration(self, roles):
-        """
-        Find the best suited maximum video duration given a list of roles
-        :param roles: List of roles
-        :returns: Maximum duration in seconds
-        """
         max_duration = self.__max_duration["default"]
         for i in range(len(roles)):
             try:
@@ -140,10 +136,6 @@ class Downloader(commands.Cog):
         self.__logging.warning(text)
 
     async def cog_command_error(self, ctx, error):
-        """
-        This should be called only on exceptional circumstances if it's even possible...
-        It's here for sanity because I'm not quite sure how the internals work on discord.py
-        """
         await super().cog_command_error(ctx, error)
         await ctx.reply(error)
         self.__error(error)
