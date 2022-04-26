@@ -44,7 +44,11 @@ class Downloader(commands.Cog):
             return
 
         self.__log(f"User {ctx.author.id} attempted to download {url} inside guild ID {ctx.guild.id}")
+        isyoutube = bool('https://youtube.com/' in url)
 
+        if isyoutube == False:
+            self.__warning("User attempted to download a non-youtube video.")
+            await ctx.reply(f'This is not a youtube link.')
         # Check URL for nasties like &list=
         containsList = bool('list=' in url)
 
