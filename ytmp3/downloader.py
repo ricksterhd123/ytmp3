@@ -6,14 +6,11 @@ from discord.ext import commands
 class Downloader(commands.Cog):
     def __init__(self, bot, logging, options):
         self.bot = bot
-        # logs for youtube-dl
         self.__logging = logging
-        # Hostname of webserver
         self.__hostname = options["hostname"]
-        # Path to save .mp3 files
         self.__file_path = options["filepath"]
-        # Maximum duration of video in minutes
         self.__max_duration = options["max_duration"]
+        
         # Youtube-dl options
         self.__ydl_opts = {
             "format": "bestaudio/best",
@@ -44,11 +41,14 @@ class Downloader(commands.Cog):
             return
 
         self.__log(f"User {ctx.author.id} attempted to download {url} inside guild ID {ctx.guild.id}")
+        
+        # Check if the url is a youtube link
         isyoutube = bool('https://youtube.com/' in url)
 
         if isyoutube == False:
             self.__warning("User attempted to download a non-youtube video.")
             await ctx.reply(f'This is not a youtube link.')
+            
         # Check URL for nasties like &list=
         containsList = bool('list=' in url)
 
