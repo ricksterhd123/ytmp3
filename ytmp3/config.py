@@ -1,10 +1,12 @@
 config = {
     "filepath": "../static",
     "log_path": "../log/bot.log",
+    "youtube_api_key": "",
     "bot_token": "",
     "hostname": "https://localhost:8080/play",
-    # Indexed by discord role id
     "max_duration": {
-        'default': 30, # fallback if user does not match any of the groups
+        # indexed by role id
+        # fallback
+        'default': 30,
     },
 }
