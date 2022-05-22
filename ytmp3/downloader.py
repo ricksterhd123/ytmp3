@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 from yt_dlp import YoutubeDL
 from discord.ext import commands
+from ytsearch import getYoutubeVideoFromKeyword
 
 class Downloader(commands.Cog):
     """
@@ -17,6 +18,8 @@ class Downloader(commands.Cog):
         self.__file_path = options["filepath"]
         # Maximum duration of video in minutes
         self.__max_duration = options["max_duration"]
+        # API key for youtube API v3
+        self.__youtube_api_key = options["youtube_api_key"]
         # Youtube-dl options
         self.__ydl_opts = {
             "format": "bestaudio/best",
@@ -42,16 +45,20 @@ class Downloader(commands.Cog):
         await ctx.reply("Pong")
 
     @commands.command()
-    async def download(self, ctx, url):
+    async def download(self, ctx, *arg):
         """
-        Downloads video from provided URL,
-        reply directly to discord user with URL of converted .mp3 file
+        Downloads video from provided URL or keywords then 
+        provides URl to converted .mp3 file
         """
         # Don't serve via direct message
         if not ctx.guild:
             return
 
-        self.__log(f"User {ctx.author.id} attempted to download {url} inside guild ID {ctx.guild.id}")
+        # Construct arguments into a string
+        arg_string = arg[0]
+        if len(arg) > 1:
+            for i in range(1, len(arg)):
+                arg_string += ' ' + arg[i]
 
         # Check URL for nasties like &list=
         if "list=" in url:
