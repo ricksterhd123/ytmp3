@@ -54,9 +54,7 @@ class Downloader(commands.Cog):
         self.__log(f"User {ctx.author.id} attempted to download {url} inside guild ID {ctx.guild.id}")
 
         # Check URL for nasties like &list=
-        containsList = not not re.search("list=", url)
-
-        if containsList:
+        if "list=" in url:
             self.__warning("Detected 'list=' substring inside the URL.")
             return await ctx.reply("Cannot accept URL containing 'list='")
 
