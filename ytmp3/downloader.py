@@ -78,11 +78,11 @@ class Downloader(commands.Cog):
             p = Path(f"{self.__file_path}/{video_id}.mp3")
 
             if p.exists():
-                await ctx.reply(f"YES =D\n{self.__hostname}/{video_id}.mp3")
+                await ctx.reply(f"{self.__hostname}/{video_id}.mp3")
             else:
                 try:
                     self.__download_video(url)
-                    await ctx.reply(f"YO {ctx.author.display_name} =D\n{self.__hostname}/{video_id}.mp3")
+                    await ctx.reply(f"{self.__hostname}/{video_id}.mp3")
                 except Exception as error:
                     self.__error(f"Failed to download video {url} requested from {ctx.author.display_name}")
                     self.__error(error)
