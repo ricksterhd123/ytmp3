@@ -55,38 +55,46 @@ class Downloader(commands.Cog):
             self.__warning("Detected 'list=' substring inside the URL.")
             return await ctx.reply("Cannot accept URL containing 'list='")
 
-        with YoutubeDL(self.__ydl_opts) as ydl:
-            info_dict = ydl.sanitize_info(ydl.extract_info(url, download=False))
-            video_id = info_dict.get("display_id", None)
-            duration = info_dict.get("duration", None)
+        try:
+            with YoutubeDL(self.__ydl_opts) as ydl:
+                info_dict = ydl.sanitize_info(ydl.extract_info(url, download=False))
+                video_id = info_dict.get("display_id", None)
+                duration = info_dict.get("duration", None)
 
-            self.__log(f"Video ID: {video_id}, Duration: {duration}")
+                self.__log(f"Video ID: {video_id}, Duration: {duration}")
 
-            if not duration:
-                self.__warning(f"Video ID: {video_id} has no duration metadata")
-                return await ctx.reply("Cannot find duration in metadata. Are you sure this is a YouTube video?")
+                if not duration:
+                    self.__warning(f"Video ID: {video_id} has no duration metadata")
+                    return await ctx.reply("Cannot find duration in metadata. Are you sure this is a YouTube video?")
 
-            # Determine the user's max video duration from their role
-            max_duration = self.__get_max_duration(ctx.author.roles)
-            self.__log(f"User's maximum video duration: {max_duration}")
+                # Determine the user's max video duration from their role
+                max_duration = self.__get_max_duration(ctx.author.roles)
+                self.__log(f"User's maximum video duration: {max_duration}")
 
-            # Check if video's duration has exceeded the max duration
-            if duration > max_duration * 60:
-                self.__warning(f"Video ID: {video_id} exceeds max duration")
-                return await ctx.reply(f"Sorry, that video's duration has exceeded {max_duration} minutes. Please try a shorter video.")
+                # Check if video's duration has exceeded the max duration
+                if duration > max_duration * 60:
+                    self.__warning(f"Video ID: {video_id} exceeds max duration")
+                    return await ctx.reply(f"Sorry, that video's duration has exceeded {max_duration} minutes. Please try a shorter video.")
 
-            p = Path(f"{self.__file_path}/{video_id}.mp3")
+                p = Path(f"{self.__file_path}/{video_id}.mp3")
 
-            if p.exists():
-                await ctx.reply(f"{self.__hostname}/{video_id}.mp3")
-            else:
-                try:
-                    self.__download_video(url)
+                if p.exists():
                     await ctx.reply(f"{self.__hostname}/{video_id}.mp3")
-                except Exception as error:
-                    self.__error(f"Failed to download video {url} requested from {ctx.author.display_name}")
-                    self.__error(error)
-                    await ctx.reply(error)
+                else:
+                    self.__log(f"Downloading {url}")
+                    ydl.download([url])
+                    self.__log(f"Finished")
+
+                    await ctx.reply(f"{self.__hostname}/{video_id}.mp3")
+        except Exception as error:
+            self.__error(error)
+            # Take the original message from ExtractorError in yt-dlp
+            if not hasattr(error, 'exc_info'):
+                return
+            exception = error.exc_info[1]
+            if not hasattr(exception, 'orig_msg'):
+                return
+            await ctx.reply(exception.orig_msg)
 
     @commands.command()
     async def help(self, ctx):
@@ -120,11 +128,6 @@ class Downloader(commands.Cog):
                 pass
         return max_duration
 
-    def __download_video(self, url):
-        with YoutubeDL(self.__ydl_opts) as ydl:
-            self.__log(f"Downloading {url}")
-            ydl.download([url])
-
     def __log(self, text):
         self.__logging.info(text)
 
@@ -136,13 +139,11 @@ class Downloader(commands.Cog):
 
     async def cog_command_error(self, ctx, error):
         """
-        This should be called only on exceptional circumstances if it's even possible...
-        It's here for sanity because I'm not quite sure how the internals work on discord.py
+        This should be called only on exceptional circumstances
         """
         await super().cog_command_error(ctx, error)
-        await ctx.reply(error)
         self.__error(error)
 
     def my_hook(self, d):
         if d["status"] == "finished":
-            self.__log("Done downloading, now converting")
+            self.__log("Converting to MP3")
