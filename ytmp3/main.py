@@ -1,14 +1,17 @@
+import logger
+import discord 
 from downloader import *
 from discord.ext import commands
 from config import config
-import logger
 logging = logger.get_logger(config["log_path"])
 
 ###########################################
 # Discord bot setup
 ###########################################
 
-bot = commands.Bot(command_prefix="$", help_command=None)
+intents = discord.Intents.default()
+intents.message_content = True
+bot = commands.Bot(command_prefix="$", help_command=None, intents=intents)
 
 ###########################################
 # Routing
