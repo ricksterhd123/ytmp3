@@ -20,11 +20,14 @@ class Downloader(commands.Cog):
         self.__ydl_opts = {
             "format": "bestaudio/best",
             "outtmpl": f"{self.__file_path}/%(display_id)s.%(ext)s",
+            # ffmpeg flags
             'postprocessors': [{
-                "key": "FFmpegExtractAudio",
+                "key": "FFmpegExtractAudio", # --extract-audio
                 "preferredcodec": "mp3",
                 "preferredquality": "192",
-            }],
+            },
+            {'key': 'FFmpegMetadata'}], # --add-metadata
+            {'key': 'EmbedThumbnail'}, # --embed-thumbnail
             "logger": logging,
             "progress_hooks": [self.my_hook],
         }
