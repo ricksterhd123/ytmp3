@@ -18,4 +18,4 @@ typing_extensions==4.4.0
 urllib3==1.26.12
 websockets==10.3
 yarl==1.8.1
-yt-dlp==2023.9.24
+yt-dlp==2023.11.14
